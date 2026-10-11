@@ -239,6 +239,7 @@ Il ne suffit pas de masquer les profils des autres utilisateurs dans l'interface
 
 > Une requête HTTP, c'est avant tout des données, elles sont structurées pour suivre les règles du protocole. Vous pouvez modifiez TOUTE la requête, faire en sorte qu'elle ne respecte pas le protocole, car c'est vous qui choisissez ce que vous envoyez.
 >> Le navigateur créer pour vous ces données dans la bonne structure. Vous pouvez utiliser n'importe quel `socket` TCP pour envoyer les données que vous souhaitez.
+
 > Vous pouvez modifier la requête en conservant le format du protocole HTTP, de cette manière vous pourriez envoyer la même requête que le navigateur de votre voisin (ou n'importe quel autre requête), dans la plupart des cas cela pourrait vous faire passer pour le navigateur usurpé auprès du serveur. On utilise des données **aléatoire et secrète** sur des **flux chiffrés** pour éviter l'usurpation.
 
 La vérification des autorisations doit donc être effectuée côté serveur, à chaque accès pertinent à une ressource.
