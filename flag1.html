@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<!--
+
+    Simple web page with hidden flag
+    Copyright (C) 2026  Maurice Lambert
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
+-->
+
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Mini CTF</title>
+        <style>
+            body {
+                margin: 0;
+                background: linear-gradient(135deg, #0f172a, #1e293b);
+                color: white;
+                font-family: Arial, sans-serif;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                height: 100vh;
+            }
+
+            .card {
+                text-align: center;
+                background: rgba(255,255,255,0.08);
+                padding: 40px;
+                border-radius: 15px;
+                backdrop-filter: blur(10px);
+                box-shadow: 0 0 20px rgba(0,0,0,.4);
+            }
+
+            h1 {
+                color: #38bdf8;
+            }
+
+            p {
+                color: #cbd5e1;
+            }
+
+            button {
+                margin-top: 20px;
+                padding: 10px 25px;
+                border: none;
+                border-radius: 8px;
+                background: #38bdf8;
+                color: white;
+                cursor: pointer;
+                font-size: 16px;
+            }
+
+            button:hover {
+                background: #0ea5e9;
+            }
+        </style>
+    </head>
+    <body>
+
+    <!--
+        Félicitations !
+        Tu as trouvé le flag.
+
+        FLAG{Inspecter_Le_Code_Source}
+    -->
+
+    <div class="card">
+        <h1>🔐 Mini CTF</h1>
+        <p>Le flag est caché quelque part sur cette page...</p>
+        <button onclick="alert('Tu cherches au bon endroit ? 😉')">
+            Chercher le flag
+        </button>
+    </div>
+
+    </body>
+</html>
