@@ -52,7 +52,7 @@
 
 Connaissances recommandées:
 
-* Comment les couches du réseau fonctionne, notamment Ethernet/IP/TCP
+* Comment les couches du réseau fonctionnent, notamment Ethernet/IP/TCP
 
 ---
 
@@ -237,10 +237,10 @@ Le navigateur peut envoyer une requête demandant les informations d'un utilisat
 
 Il ne suffit pas de masquer les profils des autres utilisateurs dans l'interface: un utilisateur pourrait modifier directement la requête HTTP envoyée au serveur.
 
-> Une requête HTTP, c'est avant tout des données, elles sont structurées pour suivre les règles du protocole. Vous pouvez modifiez TOUTE la requête, faire en sorte qu'elle ne respecte pas le protocole, car c'est vous qui choisissez ce que vous envoyez.
->> Le navigateur créer pour vous ces données dans la bonne structure. Vous pouvez utiliser n'importe quel `socket` TCP pour envoyer les données que vous souhaitez.
+> Une requête HTTP, c'est avant tout des données, elles sont structurées pour suivre les règles du protocole. Vous pouvez modifier TOUTE la requête, faire en sorte qu'elle ne respecte pas le protocole, car c'est vous qui choisissez ce que vous envoyez.
+>> Le navigateur crée pour vous ces données dans la bonne structure. Vous pouvez utiliser n'importe quel `socket` TCP pour envoyer les données que vous souhaitez.
 
-> Vous pouvez modifier la requête en conservant le format du protocole HTTP, de cette manière vous pourriez envoyer la même requête que le navigateur de votre voisin (ou n'importe quel autre requête), dans la plupart des cas cela pourrait vous faire passer pour le navigateur usurpé auprès du serveur. On utilise des données **aléatoire et secrète** sur des **flux chiffrés** pour éviter l'usurpation.
+> Vous pouvez modifier la requête en conservant le format du protocole HTTP, de cette manière vous pourriez envoyer la même requête que le navigateur de votre voisin (ou n'importe quelle autre requête), dans la plupart des cas cela pourrait vous faire passer pour le navigateur usurpé auprès du serveur. On utilise des données **aléatoires et secrètes** sur des **flux chiffrés** pour éviter l'usurpation.
 
 La vérification des autorisations doit donc être effectuée côté serveur, à chaque accès pertinent à une ressource.
 
@@ -527,7 +527,7 @@ Ces outils permettent notamment de:
 * visualiser les requêtes HTTP;
 * inspecter les cookies et le stockage local.
 
-Ces fonctionnalités sont intéressants lors d'un audit de sécurité.
+Ces fonctionnalités sont intéressantes lors d'un audit de sécurité.
 
 ## Exercice 1
 
@@ -594,7 +594,7 @@ Client (par exemple le navigateur)
  |
 Serveur Web
  |
-[OPTIONEL: framework, middleware]
+[OPTIONNEL: framework, middleware]
  |
 Application Backend
  |
@@ -730,7 +730,7 @@ Contrôle l'accès aux fonctionnalités du navigateur.
 
 ## Exercice 5
 
-Votre ami vous a fourni une URL avec authentification pour accéder à une donnée secrète, malheureusement il a dû se tromper dans l'URL car les données d'authentification ne semble pas arriver jusqu'au serveur... En comprenant le fonctionnement du protocole HTTP et l'interprétation de l'URL corrigez l'erreur.
+Votre ami vous a fourni une URL avec authentification pour accéder à une donnée secrète, malheureusement il a dû se tromper dans l'URL car les données d'authentification ne semblent pas arriver jusqu'au serveur... En comprenant le fonctionnement du protocole HTTP et l'interprétation de l'URL corrigez l'erreur.
 
 > L'identifiant et le mot de passe sont corrects, le chemin, le protocole ainsi que le nom du serveur et le port sont également corrects.
 
@@ -882,6 +882,8 @@ Trouvez le mot de passe de l'utilisateur `admin` du `/challenge5`.
 ---
 
 # 7. Comprendre les vulnérabilités d'injection les plus courantes
+
+Tous les flux de données peuvent être concernés par des vulnérabilités par injection dès lors qu'ils sont interprétés selon une syntaxe définie. Pour extraire les informations d'un flux textuel, un _parser_ (analyseur syntaxique) reconnaît des tokens à partir de caractères spécifiques, notamment les délimiteurs, dont l'interprétation est définie par une grammaire. Si un utilisateur peut injecter ces caractères sans filtrage adapté, il peut introduire de nouveaux tokens dans le flux, qui seront interprétés si la syntaxe et la grammaire le permettent. Ainsi, lorsqu'un programme génère un flux destiné à être interprété à partir de données contrôlées par un utilisateur, un filtrage absent ou insuffisant des entrées ou des sorties peut permettre à un attaquant de modifier la structure ou la sémantique du flux et, potentiellement, de détourner son interprétation. C'est le principe général des vulnérabilités par injection, comme les injections SQL, HTML ou de commandes système.
 
 ## 7.1 Base de données relationnelle
 
@@ -1279,7 +1281,7 @@ La sécurité d'une application Web repose sur plusieurs principes fondamentaux:
 * Maintenir les composants à jour.
 * Concevoir la sécurité dès la conception, la sécurité et les approches du déploiement sont à prendre en compte.
 * Auditer le code dans le même contexte qu'en production.
-* Vérifier le code, par des revues humaine mais aussi par des outils d'analyse statique, dynamique, au runtime et automatiser la surveillance des vulnérabilités sur les composants prérequis. L'IA peut analyser du code pour les vulnérabilités.
+* Vérifier le code, par des revues humaines mais aussi par des outils d'analyse statique, dynamique, au runtime et automatiser la surveillance des vulnérabilités sur les composants prérequis. L'IA peut analyser du code pour les vulnérabilités.
 
 # License
 
