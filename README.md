@@ -885,6 +885,76 @@ Trouvez le mot de passe de l'utilisateur `admin` du `/challenge5`.
 
 Tous les flux de données peuvent être concernés par des vulnérabilités par injection dès lors qu'ils sont interprétés selon une syntaxe définie. Pour extraire les informations d'un flux textuel, un _parser_ (analyseur syntaxique) reconnaît des tokens à partir de caractères spécifiques, notamment les délimiteurs, dont l'interprétation est définie par une grammaire. Si un utilisateur peut injecter ces caractères sans filtrage adapté, il peut introduire de nouveaux tokens dans le flux, qui seront interprétés si la syntaxe et la grammaire le permettent. Ainsi, lorsqu'un programme génère un flux destiné à être interprété à partir de données contrôlées par un utilisateur, un filtrage absent ou insuffisant des entrées ou des sorties peut permettre à un attaquant de modifier la structure ou la sémantique du flux et, potentiellement, de détourner son interprétation. C'est le principe général des vulnérabilités par injection, comme les injections SQL, HTML ou de commandes système.
 
+Lorsqu'un backend génère une requête SQL à partir de données utilisateur insuffisamment filtrées, la syntaxe SQL peut être injectée afin de modifier la requête exécutée. Le même principe s'applique lorsque le backend génère du HTML ou du JavaScript, des templates interprétés par un moteur de rendu ou des lignes de commande exécutées par le système : des données contrôlées par l'utilisateur peuvent être interprétées comme des instructions plutôt que comme de simples données. Cependant, les syntaxes injectables ne se limitent pas à celles utilisées pour générer du code. Les protocoles de communication, comme HTTP, définissent également une syntaxe dont l'interprétation peut être détournée. Les formats de stockage et d'échange de données, comme JSON, CSV ou XML, ce dernier partageant des origines historiques et certaines conventions syntaxiques avec HTML, peuvent eux aussi être concernés. Enfin, les URL possèdent leur propre syntaxe et peuvent être manipulées pour modifier leur interprétation ou provoquer des comportements inattendus.
+
+La sécurité du backend est donc essentielle, mais elle ne suffit pas à couvrir toutes les possibilités d'injection. Le frontend peut lui aussi construire ou modifier des contenus interprétés par le navigateur. JavaScript permet notamment de rendre les pages dynamiques, d'ajouter du HTML dans le document ou d'évaluer du code JavaScript. Si des données non fiables sont intégrées à ces contenus sans traitement adapté au contexte, elles peuvent être interprétées comme du HTML ou du code exécutable, entraînant notamment des vulnérabilités de type _Cross-Site Scripting_ (XSS). La prévention des injections nécessite ainsi de prendre en compte chaque syntaxe interprétée, chaque frontière entre données et instructions, ainsi que le contexte dans lequel les données sont utilisées.
+
+Prenons une application backend qui enregistre les utilisateurs et leurs permissions dans un fichier CSV. Le fichier utilise deux colonnes séparées par une virgule : `user,permission`.
+
+Le fichier contient initialement l'en-tête suivant:
+
+```
+user,permission
+```
+
+Lorsqu'un utilisateur est créé, l'application récupère son nom et lui attribue la permission `user`. Elle construit ensuite une ligne CSV en concaténant le nom fourni et la permission attribuée:
+
+```python
+username = input("Nom d'utilisateur : ")
+permission = "user"
+
+with open("users.csv", "a") as file:
+    file.write(username + "," + permission + "\n")
+```
+
+Pour un nom d'utilisateur classique, comme `alice`, le code ajoute la ligne suivante:
+
+```
+alice,user
+```
+
+Le résultat respecte bien le format attendu: chaque ligne contient deux colonnes, le nom de l'utilisateur et sa permission.
+
+Imaginons maintenant qu'un utilisateur fournisse le nom suivant:
+
+```
+test,admin
+test1
+```
+
+Cette entrée contient deux caractères importants pour la syntaxe CSV:
+
+- `,` est le séparateur de colonnes ;
+- `\n` représente ici un saut de ligne, qui sépare deux enregistrements.
+
+Le backend ne vérifie pas ces caractères et concatène directement l'entrée avec la permission attribuée. Le contenu ajouté au fichier devient alors:
+
+```
+test,admin
+test1,user
+```
+
+L'application pensait ajouter un seul utilisateur avec la permission `user`. Pourtant, elle a ajouté deux lignes et modifié la structure du fichier.
+
+Lorsque le parser lit le fichier, il interprète les virgules comme des séparateurs de colonnes et les sauts de ligne comme des séparateurs d'enregistrements.
+
+Il obtient donc les données suivantes:
+
+| `user` | `permission` |
+| --- | --- |
+| `test` | `admin` |
+| `test1` | `user` |
+
+Le parser ne peut pas savoir que la première ligne provient d'une entrée utilisateur malveillante. Du point de vue de la syntaxe CSV, le contenu est valide: il contient bien deux colonnes séparées par une virgule.
+
+L'utilisateur `test` se retrouve donc associé à la permission `admin`, alors que l'application n'avait jamais prévu de lui attribuer cette permission. La permission `user` réellement attribuée par l'application est associée à un autre utilisateur, `test1`.
+
+Le problème ne vient pas nécessairement du parser CSV. Celui-ci remplit son rôle: il interprète le flux selon les règles du format.
+
+Le problème vient du backend, qui n'a pas vérifié les données fournies par l'utilisateur. En insérant directement l'entrée utilisateur dans le flux, il a permis à cette entrée de modifier la structure des données. Le backend aurait dû refuser l'ajout de caractères spéciaux comme les virgules et les sauts de ligne ou aurait dû les *échapper* si la syntaxe l'avait permis.
+
+Une fois le fichier généré, le parser ne dispose d'aucune information lui permettant de distinguer les séparateurs ajoutés par l'application de ceux fournis par l'utilisateur.
+
 ## 7.1 Base de données relationnelle
 
 > Une base de données relationnelle organise les informations dans des *tables* composées de *lignes (enregistrements)* et de *colonnes (attributs)*. Les données sont manipulées grâce au langage **SQL (Structured Query Language)**.
