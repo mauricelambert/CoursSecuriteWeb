@@ -649,6 +649,13 @@ Une requête HTTP contient:
   * `/users`
   * `/users?filter=toto`
 
+* La version HTTP (sauf en version < 1)
+
+  * `HTTP/1.0`
+  * `HTTP/1.1`
+  * `HTTP/2`
+  * `HTTP/3`
+
 * Des en-têtes HTTP
 
   * `Cookie: session=abc`
@@ -656,7 +663,13 @@ Une requête HTTP contient:
 
 * Un corps de requête éventuel (tout le contenu/données à envoyer)
 
-Exemple:
+Exemples:
+
+```
+GET /index.html HTTP/1.1
+Host: example.com
+
+```
 
 ```
 POST /login HTTP/1.1
@@ -666,67 +679,6 @@ Content-Length: 27
 
 username=test&password=test
 ```
-
----
-
-## 5.2 Les headers HTTP importants en sécurité
-
-### Content-Security-Policy (CSP)
-
-Objectif:
-
-* Limiter les sources de contenu exécutables.
-* Réduire l'impact des attaques XSS.
-
-Exemple:
-
-```
-Content-Security-Policy: default-src 'self'; script-src 'self'
-```
-
----
-
-### Cookie flags: HttpOnly & Secure & SameSite
-
-Attribut d'un cookie empêchant l'accès JavaScript, l'envoi des cookies sur des flux non chiffrés et l'envoi des cookies lors des requêtes externes:
-
-```
-Set-Cookie: session=abc123; HttpOnly; Secure; SameSite=Strict
-```
-
-Protection contre:
-
-* Vol de cookie via XSS.
-* Interception sur un réseau non sécurisé.
-* Certaines attaques CSRF.
-
----
-
-### Autres headers importants
-
-#### X-Content-Type-Options
-
-Empêche le navigateur de deviner un type MIME:
-
-```
-X-Content-Type-Options: nosniff
-```
-
-#### Strict-Transport-Security (HSTS)
-
-Force l'utilisation de HTTPS:
-
-```
-Strict-Transport-Security: max-age=31536000
-```
-
-#### Referrer-Policy
-
-Limite la fuite d'informations via le header Referer.
-
-#### Permissions-Policy
-
-Contrôle l'accès aux fonctionnalités du navigateur.
 
 ## Exercice 5
 
@@ -742,13 +694,422 @@ Cette fois le flag n'est plus caché dans la page HTML, cette fois il est dans l
 
 ## Exercice 7
 
-Et lorsque le serveur HTTP est non conforme ? Serez-vous capable de requêter le serveur avec la méthode `FLAG` et le *Host* à `flag.local` ?
+Et lorsque le serveur HTTP est non conforme ? Serez-vous capable de requêter le serveur sur la page `/challenge4` avec la méthode `FLAG` et le *Host* à `flag.local` ?
 
 ---
 
 ## 5.3 Structure d'une réponse HTTP
 
-**TODO**
+Une réponse HTTP contient plusieurs éléments :
+
+- Une version du protocole HTTP :
+  - `HTTP/1.1`
+  - `HTTP/2`
+  - `HTTP/3`
+
+- Un code de statut HTTP indiquant le résultat du traitement de la requête :
+  - `200 OK`
+  - `301 Moved Permanently`
+  - `400 Bad Request`
+  - `401 Unauthorized`
+  - `403 Forbidden`
+  - `404 Not Found`
+  - `500 Internal Server Error`
+
+- Des en-têtes HTTP (_headers_) contenant des métadonnées sur la réponse :
+  - `Content-Type: text/html`
+  - `Content-Length: 1234`
+  - `Set-Cookie: session=abc123; HttpOnly; Secure`
+
+- Un corps de réponse éventuel contenant les données retournées au client :
+  - Une page HTML
+  - Un document JSON
+  - Une image
+  - Un fichier à télécharger
+
+### Exemple de réponse HTTP
+
+```
+HTTP/1.1 200 OK
+Content-Type: text/html; charset=UTF-8
+Content-Length: 46
+X-Content-Type-Options: nosniff
+
+<html><body><h1>Bienvenue</h1></body></html>
+```
+
+Dans cet exemple :
+
+- `HTTP/1.1` indique la version du protocole.
+- `200 OK` indique que la requête a été traitée avec succès.
+- `Content-Type` indique que le contenu retourné est du HTML encodé en UTF-8.
+- `Content-Length` indique la taille du corps en octets.
+- `X-Content-Type-Options` demande au navigateur de ne pas effectuer de détection automatique du type MIME.
+- Le corps contient le HTML affiché par le navigateur.
+
+**Remarque :** cet exemple utilise HTTP/1.1. Avec HTTP/2 et HTTP/3, la représentation sur le réseau est différente : les messages sont transportés sous forme de trames et ne se présentent pas sous cette forme textuelle brute.
+
+---
+
+## 5.4 Les codes de statut HTTP importants en sécurité
+
+Les codes de statut HTTP sont regroupés en cinq catégories.
+
+### 1xx — Information
+
+La requête a été reçue et le traitement se poursuit.
+
+Exemple :
+
+- `100 Continue` : le client peut poursuivre l'envoi de sa requête.
+
+### 2xx — Succès
+
+La requête a été reçue, comprise et traitée avec succès.
+
+Exemples :
+
+- `200 OK` : la requête a réussi.
+- `201 Created` : une ressource a été créée.
+- `204 No Content` : la requête a réussi, mais aucune donnée n'est renvoyée dans le corps.
+
+### 3xx — Redirection
+
+Le client doit généralement effectuer une autre action pour accéder à la ressource.
+
+Exemples :
+
+- `301 Moved Permanently` : redirection permanente.
+- `302 Found` : redirection temporaire.
+- `304 Not Modified` : la ressource n'a pas changé depuis la dernière version mise en cache.
+
+**Point de sécurité :** les redirections vers des URL contrôlées par un utilisateur peuvent provoquer des attaques de type _Open Redirect_, notamment lorsqu'elles sont utilisées dans des liens de connexion ou de réinitialisation de mot de passe.
+
+### 4xx — Erreur côté client
+
+La requête présente un problème ou ne peut pas être satisfaite dans les conditions actuelles.
+
+Exemples :
+
+- `400 Bad Request` : requête invalide.
+- `401 Unauthorized` : authentification requise ou invalide.
+- `403 Forbidden` : accès refusé.
+- `404 Not Found` : ressource introuvable.
+- `405 Method Not Allowed` : méthode HTTP non autorisée pour cette ressource.
+- `429 Too Many Requests` : trop de requêtes ont été effectuées dans un intervalle donné.
+
+**Point de sécurité :** les messages d'erreur ne doivent pas révéler d'informations sensibles telles que des traces d'exécution, des chemins internes, des requêtes SQL ou des détails de configuration.
+
+### 5xx — Erreur côté serveur
+
+Le serveur n'a pas réussi à traiter une requête pourtant exploitable, ou rencontre un problème inattendu.
+
+Exemples :
+
+- `500 Internal Server Error` : erreur interne.
+- `502 Bad Gateway` : réponse invalide reçue par un serveur intermédiaire.
+- `503 Service Unavailable` : service temporairement indisponible.
+- `504 Gateway Timeout` : délai d'attente dépassé auprès d'un serveur intermédiaire.
+
+**Point de sécurité :** les erreurs `5xx` doivent être journalisées côté serveur sans exposer les détails techniques aux utilisateurs. Elles peuvent également révéler des problèmes de disponibilité ou des comportements exploitables par un attaquant.
+
+---
+
+## 5.5 Les headers HTTP importants en sécurité
+
+Les en-têtes de réponse permettent notamment de définir les règles de sécurité appliquées par le navigateur, de contrôler la mise en cache et de limiter les fuites d'informations.
+
+### Content-Security-Policy (CSP)
+
+Objectif :
+
+- Limiter les sources de scripts, de styles, d'images et d'autres ressources.
+- Réduire l'impact des attaques XSS (_Cross-Site Scripting_).
+- Limiter certaines possibilités d'injection de contenu.
+
+Exemple :
+
+```
+Content-Security-Policy: default-src 'self'; script-src 'self'
+```
+
+Dans cet exemple :
+
+- `default-src 'self'` autorise par défaut les ressources provenant de la même origine.
+- `script-src 'self'` limite les scripts aux ressources de cette origine.
+
+**Attention :** une CSP doit être adaptée à l'application. Une politique mal configurée peut bloquer des fonctionnalités légitimes, tandis qu'une politique trop permissive peut réduire son efficacité.
+
+Une CSP très restrictive:
+
+```
+Content-Security-Policy: default-src 'none'; script-src 'none'; style-src 'none'; img-src 'none'; font-src 'none'; connect-src 'none'; media-src 'none'; object-src 'none'; frame-src 'none'; frame-ancestors 'none'; base-uri 'none'; form-action 'none'
+```
+
+- `default-src 'none'` : bloque par défaut le chargement de toutes les ressources.
+- `script-src 'none'` : interdit l'exécution de scripts JavaScript.
+- `style-src 'none'` : interdit les feuilles de style CSS.
+- `img-src 'none'` : interdit le chargement d'images.
+- `font-src 'none'` : interdit le chargement de polices.
+- `connect-src 'none'` : bloque les connexions initiées par JavaScript, comme `fetch`, XHR et WebSocket.
+- `media-src 'none'` : interdit les ressources audio et vidéo.
+- `object-src 'none'` : interdit les objets intégrés tels que les applets et les plugins concernés.
+- `frame-src 'none'` : interdit le chargement de pages dans des cadres depuis le document.
+- `frame-ancestors 'none'` : interdit l'intégration de la page dans une iframe, ce qui contribue à prévenir le Clickjacking.
+- `base-uri 'none'` : interdit la définition d'une URL de base avec la balise HTML `<base>`.
+- `form-action 'none'` : interdit l'envoi de formulaires.
+
+### Set-Cookie : HttpOnly, Secure et SameSite
+
+Objectif :
+
+- Contrôler la manière dont les cookies sont stockés et envoyés par le navigateur.
+- Réduire les risques de vol de session et certaines attaques CSRF.
+
+Exemple :
+
+```
+Set-Cookie: session=abc123; Path=/; HttpOnly; Secure; SameSite=Strict
+```
+
+Rôle des attributs :
+
+- `HttpOnly` : empêche l'accès au cookie via les API JavaScript telles que `document.cookie`.
+- `Secure` : limite l'envoi du cookie aux connexions HTTPS.
+- `SameSite=Strict` : limite fortement l'envoi du cookie dans les contextes de navigation intersites.
+- `Path=/` : définit le chemin pour lequel le cookie est envoyé.
+
+Protections apportées :
+
+- Réduction du risque de vol de cookie par JavaScript.
+- Réduction du risque d'interception du cookie sur une connexion HTTP non chiffrée.
+- Réduction de certaines attaques CSRF.
+
+**Attention :** `HttpOnly` n'empêche pas une attaque XSS d'effectuer des actions avec la session de la victime. `Secure` ne remplace pas HTTPS et `SameSite` ne suffit pas toujours à empêcher toutes les attaques CSRF.
+
+### X-Content-Type-Options
+
+Objectif :
+
+- Empêcher le navigateur de tenter de deviner le type MIME d'une ressource.
+- Réduire certains risques liés à l'interprétation incorrecte de contenus.
+
+Exemple :
+
+```
+X-Content-Type-Options: nosniff
+```
+
+Cet en-tête est particulièrement utile lorsque le serveur renvoie des ressources dont le type MIME doit être respecté.
+
+### Strict-Transport-Security (HSTS)
+
+Objectif :
+
+- Indiquer au navigateur qu'il doit utiliser HTTPS pour communiquer avec le site pendant une durée définie.
+- Réduire les risques de rétrogradation vers HTTP et certaines attaques de type _Man-in-the-Middle_.
+
+Exemple :
+
+```
+Strict-Transport-Security: max-age=31536000
+```
+
+Ici, `max-age=31536000` demande au navigateur de mémoriser cette politique pendant un an.
+
+Une configuration plus complète peut inclure :
+
+```
+Strict-Transport-Security: max-age=31536000; includeSubDomains
+```
+
+`includeSubDomains` étend la politique aux sous-domaines. Il faut s'assurer que tous les sous-domaines concernés prennent en charge HTTPS avant de l'utiliser.
+
+**Attention :** HSTS est appliqué par le navigateur après réception de cet en-tête sur une connexion HTTPS sécurisée. Il ne protège pas, à lui seul, la toute première connexion HTTP, sauf si le domaine bénéficie notamment d'une politique de préchargement HSTS.
+
+### Referrer-Policy
+
+Objectif :
+
+- Contrôler les informations transmises dans l'en-tête `Referer` lorsqu'un navigateur navigue vers une autre ressource.
+- Réduire les fuites d'URL, de chemins ou de paramètres pouvant contenir des informations sensibles.
+
+Exemple :
+
+```
+Referrer-Policy: strict-origin-when-cross-origin
+```
+
+Cette politique :
+
+- Transmet généralement l'URL complète lors d'une navigation de même origine.
+- Ne transmet que l'origine lors d'une navigation intersites sécurisée.
+- Ne transmet pas le référent lors d'une navigation depuis HTTPS vers HTTP.
+
+Une politique plus restrictive peut être utilisée :
+
+```
+Referrer-Policy: no-referrer
+```
+
+### Permissions-Policy
+
+Objectif :
+
+- Contrôler l'accès de certaines fonctionnalités du navigateur, comme la caméra, le microphone ou la géolocalisation.
+- Réduire les possibilités d'utilisation abusive de ces fonctionnalités.
+
+Exemple :
+
+```
+Permissions-Policy: camera=(), microphone=(), geolocation=()
+```
+
+Dans cet exemple, ces fonctionnalités sont désactivées pour le document concerné, sous réserve des règles d'application de la politique.
+
+### Cache-Control
+
+Objectif :
+
+- Contrôler la mise en cache des réponses HTTP.
+- Éviter que des données sensibles soient conservées ou réutilisées dans des conditions inappropriées.
+
+Exemple :
+
+```
+Cache-Control: no-store
+```
+
+Cette directive demande aux caches de ne pas stocker la réponse.
+
+Elle est particulièrement pertinente pour les pages contenant des données sensibles, telles que des informations bancaires, des données personnelles ou des informations de compte.
+
+À distinguer de :
+
+- `no-cache` : autorise le stockage, mais impose une validation avant réutilisation dans les conditions prévues par HTTP.
+- `private` : interdit le stockage par les caches partagés, mais autorise le stockage dans un cache privé, comme celui du navigateur.
+
+### Access-Control-Allow-Origin (CORS)
+
+Objectif :
+
+- Définir les origines autorisées à lire les réponses d'une ressource via les mécanismes CORS des navigateurs.
+- Contrôler les échanges entre applications web hébergées sur des origines différentes.
+
+Exemple :
+
+```
+Access-Control-Allow-Origin: https://app.example.com
+```
+
+Cette réponse autorise l'origine `https://app.example.com` à accéder à la réponse dans le cadre des règles CORS.
+
+**Attention :** CORS n'est pas un mécanisme d'authentification ni une protection générale contre les requêtes malveillantes. Une configuration trop permissive, notamment avec des identifiants, peut exposer des données sensibles.
+
+### Autres headers à connaître
+
+#### Content-Type
+
+Indique le type de contenu renvoyé :
+
+```
+Content-Type: application/json; charset=UTF-8
+```
+
+Le serveur doit choisir un type MIME cohérent avec le contenu réel de la réponse.
+
+#### Content-Disposition
+
+Contrôle notamment la manière dont un contenu est présenté ou téléchargé :
+
+```
+Content-Disposition: attachment; filename="document.pdf"
+```
+
+Cet en-tête peut être utile pour forcer le téléchargement d'un fichier plutôt que son affichage direct.
+
+Le nom de fichier doit être traité avec précaution lorsqu'il dépend d'une entrée utilisateur.
+
+#### X-Frame-Options
+
+Permet de limiter l'intégration d'une page dans un cadre HTML (_iframe_), notamment pour réduire les risques de _Clickjacking_.
+
+Exemple :
+
+```
+X-Frame-Options: DENY
+```
+
+Cette directive interdit l'affichage de la page dans un cadre, sous réserve de la prise en charge du navigateur.
+
+Pour les applications modernes, la directive CSP `frame-ancestors` constitue une alternative plus flexible.
+
+#### Server
+
+Peut révéler le logiciel utilisé par le serveur :
+
+```
+Server: nginx
+```
+
+**Point de sécurité :** limiter les informations techniques exposées peut réduire les renseignements disponibles pour un attaquant. Cela ne remplace toutefois pas la mise à jour des logiciels ni leur configuration sécurisée.
+
+---
+
+## 5.6 Exemple d'une réponse HTTP sécurisée
+
+Voici un exemple de réponse pour une page HTML nécessitant une configuration de sécurité renforcée :
+
+```
+HTTP/1.1 200 OK
+Content-Type: text/html; charset=UTF-8
+X-Content-Type-Options: nosniff
+Content-Security-Policy: default-src 'self'; script-src 'self'
+Strict-Transport-Security: max-age=31536000
+Referrer-Policy: strict-origin-when-cross-origin
+Permissions-Policy: camera=(), microphone=(), geolocation=()
+Cache-Control: no-store
+X-Frame-Options: DENY
+Set-Cookie: session=abc123; Path=/; HttpOnly; Secure; SameSite=Strict
+
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Page sécurisée</title>
+</head>
+<body>
+    <h1>Bienvenue</h1>
+</body>
+</html>
+```
+
+Cette configuration illustre plusieurs mécanismes de défense complémentaires :
+
+- **Protection contre certaines attaques XSS :** CSP et `X-Content-Type-Options`.
+- **Protection de la session :** attributs du cookie.
+- **Protection des communications :** HSTS, en complément de HTTPS.
+- **Réduction des fuites d'informations :** `Referrer-Policy`.
+- **Restriction des fonctionnalités du navigateur :** `Permissions-Policy`.
+- **Protection des données sensibles en cache :** `Cache-Control`.
+- **Réduction du risque de Clickjacking :** `X-Frame-Options`.
+
+Il ne s'agit pas d'une configuration universelle à copier sans adaptation. Par exemple, une application utilisant des scripts externes, des iframes ou des fonctionnalités de caméra devra ajuster ses politiques. HSTS doit être envoyé uniquement dans un contexte HTTPS approprié.
+
+---
+
+## 5.7 Points de vigilance en sécurité
+
+Lors de l'analyse d'une réponse HTTP, il faut notamment vérifier :
+
+- **Les codes de statut :** ne pas confondre authentification (`401`) et autorisation (`403`).
+- **Les informations divulguées :** éviter les traces d'erreurs détaillées, les chemins internes et les informations techniques inutiles.
+- **Les cookies :** utiliser les attributs adaptés au contexte de l'application.
+- **Les en-têtes de sécurité :** vérifier leur présence, leur cohérence et leur compatibilité avec le fonctionnement du site.
+- **Les redirections :** vérifier qu'une URL fournie par un utilisateur ne permet pas de rediriger arbitrairement vers un site externe.
+- **La mise en cache :** éviter que les réponses sensibles soient stockées dans des caches inappropriés.
+- **Les politiques CORS :** limiter les origines autorisées aux besoins réels de l'application.
+- **Le contenu réellement retourné :** vérifier que le type MIME annoncé correspond au contenu transmis.
 
 ---
 
