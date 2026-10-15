@@ -127,6 +127,7 @@ r = s.recv(4096)
 s.close()
 r
 
+exit()
 # b'HTTP/1.1 302 Found\r\nServer: BaseHTTP/0.6 Python/3.14.2\r\nDate: Tue, 22 Sep 2026 15:28:41 GMT\r\nServer: BaseHTTP/0.6 Python/3.14.2\r\nDate: Tue, 22 Sep 2026 15:28:41 GMT\r\nLocation: /demo1/messages\r\nSet-Cookie: user=Z3Vlc3Q=; Path=/\r\nContent-Length: 0\r\n\r\n'
 
 s = socket()

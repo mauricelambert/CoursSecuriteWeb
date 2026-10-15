@@ -54,6 +54,183 @@ db.commit()
 
 
 def page(title, color, content):
+    return f"""<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{title} | Web Security Lab</title>
+    <style>
+        :root {{
+            color-scheme: dark;
+            --bg: #0b1120;
+            --panel: #111c30;
+            --border: #263650;
+            --text: #e5edf8;
+            --muted: #94a3b8;
+            --accent: #22d3ee;
+        }}
+
+        * {{ box-sizing: border-box; }}
+
+        body {{
+            margin: 0;
+            min-height: 100vh;
+            background:
+                radial-gradient(ellipse at 50% 0%,
+                    #152945 0%, transparent 60%),
+                var(--bg);
+            color: var(--text);
+            font-family: Inter, system-ui, sans-serif;
+            line-height: 1.6;
+        }}
+
+        header {{
+            border-bottom: 1px solid var(--border);
+            padding: 18px 6%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 20px;
+            flex-wrap: wrap;
+            background: rgba(11, 17, 32, .85);
+        }}
+
+        .brand {{
+            color: white;
+            font-size: 19px;
+            font-weight: 800;
+            letter-spacing: 2px;
+        }}
+
+        .brand span {{ color: var(--accent); }}
+
+        nav {{
+            display: flex;
+            flex-wrap: wrap;
+            gap: 16px;
+        }}
+
+        nav a {{
+            color: var(--muted);
+            text-decoration: none;
+            font-size: 13px;
+        }}
+
+        nav a:hover {{ color: var(--accent); }}
+
+        main {{
+            width: min(760px, calc(100% - 32px));
+            margin: 70px auto;
+        }}
+
+        .eyebrow {{
+            color: var(--accent);
+            font-size: 11px;
+            font-weight: 800;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+        }}
+
+        h1 {{
+            font-size: clamp(28px, 5vw, 42px);
+            line-height: 1.2;
+            margin: 12px 0 28px;
+            overflow-wrap: anywhere;
+        }}
+
+        .content {{
+            background: var(--panel);
+            border: 1px solid var(--border);
+            border-top: 3px solid {color};
+            border-radius: 14px;
+            padding: clamp(20px, 5vw, 36px);
+            box-shadow: 0 20px 60px #00000030;
+            overflow-wrap: anywhere;
+        }}
+
+        input, textarea, select {{
+            max-width: 100%;
+            background: #0b1324;
+            color: var(--text);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 11px 13px;
+            font: inherit;
+        }}
+
+        input:focus, textarea:focus, select:focus {{
+            outline: 2px solid var(--accent);
+            outline-offset: 2px;
+        }}
+
+        button {{
+            background: var(--accent);
+            color: #08202a;
+            border: 0;
+            border-radius: 8px;
+            padding: 12px 18px;
+            font-weight: 800;
+            cursor: pointer;
+        }}
+
+        button:hover {{ background: #a5f3fc; }}
+
+        a {{ color: var(--accent); }}
+
+        pre {{
+            background: #080e19;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 16px;
+            overflow-x: auto;
+            white-space: pre-wrap;
+            overflow-wrap: anywhere;
+        }}
+
+        footer {{
+            border-top: 1px solid var(--border);
+            color: var(--muted);
+            padding: 24px;
+            text-align: center;
+            font-size: 12px;
+        }}
+
+        @media (max-width: 600px) {{
+            header {{ padding: 16px; }}
+            nav {{ gap: 10px; }}
+            main {{ margin: 36px auto; }}
+        }}
+    </style>
+</head>
+<body>
+    <header>
+        <div class="brand"><span>◆</span> WEB SECURITY LAB</div>
+        <nav>
+            <a href="/">Accueil</a>
+            <a href="/challenge2">URL</a>
+            <a href="/challenge3">HTTP</a>
+            <a href="/challenge5">Bruteforce</a>
+            <a href="/challenge6">Sessions</a>
+            <a href="/challenge7">Injections</a>
+            <a href="/demo1">Messagerie</a>
+            <a href="/proxy-interface">Proxy</a>
+        </nav>
+    </header>
+
+    <main>
+        <div class="eyebrow">Laboratoire pédagogique</div>
+        <h1>{title}</h1>
+        <section class="content">
+            {content}
+        </section>
+    </main>
+
+    <footer>
+        WEB SECURITY LAB · Environnement de test
+    </footer>
+</body>
+</html>"""
     return f"""
 <!DOCTYPE html>
 <html>
@@ -180,7 +357,6 @@ class Handler(http.server.BaseHTTPRequestHandler):
 
     def challenge2(self):
         parsed = urlparse(self.path)
-
         if "admin:pass" in parsed.query:
             self.send_html(HTML_CHALLENGE2_OK)
         else:
@@ -261,20 +437,39 @@ class Handler(http.server.BaseHTTPRequestHandler):
             self.end_headers()
 
     def challenge6(self):
-        self.send_html(b"""
-<h1>Challenge 6</h1>
+        self.send_html(page(
+            "Espace membre",
+            "#22d3ee",
+            """
+            <p>Connectez-vous pour accéder à votre espace personnel.</p>
 
-<form method="POST" action="/challenge6/login">
-    <input name="username" placeholder="username"><br><br>
-    <input type="password" name="password" placeholder="password"><br><br>
-    <button>Login</button>
-</form>""")
+            <form method="POST" action="/challenge6/login">
+                <label for="username">Nom d'utilisateur</label><br>
+                <input id="username" name="username"
+                       placeholder="Votre identifiant" required>
+                <br><br>
+
+                <label for="password">Mot de passe</label><br>
+                <input id="password" name="password" type="password"
+                       placeholder="Votre mot de passe" required>
+                <br><br>
+
+                <button type="submit">Se connecter →</button>
+            </form>
+            """
+        ))
+#         self.send_html(b"""
+# <h1>Challenge 6</h1>
+
+# <form method="POST" action="/challenge6/login">
+#     <input name="username" placeholder="username"><br><br>
+#     <input type="password" name="password" placeholder="password"><br><br>
+#     <button>Login</button>
+# </form>""")
 
     def challenge6_home(self):
         username = "guest"
-        cookie = cookies.SimpleCookie(
-            self.headers.get("Cookie")
-        )
+        cookie = cookies.SimpleCookie(self.headers.get("Cookie"))
 
         if "session" in cookie:
             try:
@@ -283,17 +478,15 @@ class Handler(http.server.BaseHTTPRequestHandler):
                         cookie["session"].value
                     )
                 )
-                username = session.get(
-                    "username",
-                    "guest"
-                )
+                username = session.get("username", "guest")
             except Exception:
                 pass
 
         html = f"<h1>Welcome {username}</h1>"
         if "<script>" in html.lower():
             html += "<hr><b>FLAG{xss_cookie_tampering}</b>"
-        self.send_html(html)
+        html += "<p><a href='/'>Retour à l'accueil</a></p>"
+        self.send_html(page("Mon espace", "#22d3ee", html))
 
     def challenge7_post(self):
         length = int(self.headers.get("Content-Length", 0))
@@ -329,43 +522,74 @@ class Handler(http.server.BaseHTTPRequestHandler):
 
     def challenge7(self, output=""):
         html = f"""
-        <html>
-        <body style="font-family: monospace">
-
-        <h1>Challenge 7 - SQL Injection</h1>
+        <p>Recherchez un utilisateur dans l'annuaire interne.</p>
 
         <form method="POST" action="/challenge7">
-            Search user :
-            <input name="name" value="alice">
-            <button>Search</button>
+            <label for="name">Nom à rechercher</label><br>
+            <input id="name" name="name" value="alice"
+                   placeholder="Rechercher un utilisateur" required>
+            <button type="submit">Rechercher</button>
         </form>
 
-        <hr>
+        <hr style="border-color:#263650;margin:28px 0">
 
         {output}
-
-        </body>
-        </html>
         """
 
-        self.send_html(html)
+        self.send_html(page("Annuaire interne", "#22d3ee", html))
+        # html = f"""
+        # <html>
+        # <body style="font-family: monospace">
+
+        # <h1>Challenge 7 - SQL Injection</h1>
+
+        # <form method="POST" action="/challenge7">
+        #     Search user :
+        #     <input name="name" value="alice">
+        #     <button>Search</button>
+        # </form>
+
+        # <hr>
+
+        # {output}
+
+        # </body>
+        # </html>
+        # """
+
+        # self.send_html(html)
 
     def demo1(self):
+        self.send_html(page(
+            "Messagerie interne",
+            "#a78bfa",
+            """
+            <p>Identifiez-vous pour accéder à la messagerie.</p>
 
-        self.send_html("""
-    <html>
-    <body style="font-family: monospace">
+            <form method="POST" action="/demo1/login">
+                <label for="username">Nom d'utilisateur</label><br>
+                <input id="username" name="username"
+                       placeholder="Votre nom" required>
+                <br><br>
 
-    <h1>Démonstration 1 - CSRF</h1>
+                <button type="submit">Accéder à la messagerie →</button>
+            </form>
+            """
+        ))
+    #     self.send_html("""
+    # <html>
+    # <body style="font-family: monospace">
 
-    <form method="POST" action="/demo1/login">
-        Nom utilisateur :
-        <input name="username">
-        <button>Entrer</button>
-    </form>
+    # <h1>Démonstration 1 - CSRF</h1>
 
-    </body>
-    </html>""")
+    # <form method="POST" action="/demo1/login">
+    #     Nom utilisateur :
+    #     <input name="username">
+    #     <button>Entrer</button>
+    # </form>
+
+    # </body>
+    # </html>""")
 
     def demo1_login(self):
         length = int(self.headers.get("Content-Length",0))
@@ -452,6 +676,8 @@ class Handler(http.server.BaseHTTPRequestHandler):
             self.challenge6_home()
         elif path == "/challenge7":
             self.challenge7()
+        elif path == "/proxy-interface":
+            self.proxy_interface()
         elif path.startswith("/challenge"):
             self.send_html(f"<html><head></head><body><h1>{references.get(path[10:], "NOT A FLAG")}</h1></body></html>")
         elif path == "/demo1":
@@ -473,6 +699,108 @@ class Handler(http.server.BaseHTTPRequestHandler):
         if path:
             POST_404_PATH[path] = HOST
         return HOST
+
+    def proxy_interface(self):
+        content = """
+        <style>
+            .forms {
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+                gap: 20px;
+            }
+            .form-card {
+                background: #111c30;
+                border: 1px solid #263650;
+                border-radius: 14px;
+                padding: 24px;
+            }
+            .form-card h2 {
+                font-size: 18px;
+                margin-top: 0;
+            }
+            .form-card p {
+                font-size: 13px;
+                color: #94a3b8;
+            }
+            .form-card input {
+                width: 100%;
+                margin-bottom: 12px;
+            }
+            .form-card button {
+                width: 100%;
+            }
+            .method {
+                color: #22d3ee;
+                font-size: 11px;
+                letter-spacing: 2px;
+                font-weight: bold;
+            }
+        </style>
+
+        <p>Interface de test des requêtes POST via le proxy HTTP.</p>
+
+        <div class="forms">
+
+            <section class="form-card">
+                <span class="method">POST /challenge6/login</span>
+                <h2>Connexion</h2>
+                <p>Authentification de l'espace membre.</p>
+                <form method="POST"
+                      action="http://localhost:8000/proxy?path=%2Fchallenge6%2Flogin">
+                    <label>Nom d'utilisateur</label>
+                    <input name="username" value="admin" required>
+
+                    <label>Mot de passe</label>
+                    <input name="password" type="password"
+                           placeholder="Mot de passe" required>
+
+                    <button type="submit">Se connecter</button>
+                </form>
+            </section>
+
+            <section class="form-card">
+                <span class="method">POST /challenge7</span>
+                <h2>Recherche utilisateur</h2>
+                <p>Rechercher un compte dans l'annuaire.</p>
+                <form method="POST"
+                      action="http://localhost:8000/proxy?path=%2Fchallenge7">
+                    <label>Nom à rechercher</label>
+                    <input name="name" value="alice" required>
+
+                    <button type="submit">Rechercher</button>
+                </form>
+            </section>
+
+            <section class="form-card">
+                <span class="method">POST /demo1/login</span>
+                <h2>Connexion messagerie</h2>
+                <p>Accéder à la messagerie interne.</p>
+                <form method="POST"
+                      action="http://localhost:8000/proxy?path=%2Fdemo1%2Flogin">
+                    <label>Nom d'utilisateur</label>
+                    <input name="username" value="student" required>
+
+                    <button type="submit">Entrer</button>
+                </form>
+            </section>
+
+            <section class="form-card">
+                <span class="method">POST /demo1/send</span>
+                <h2>Envoyer un message</h2>
+                <p>Publier un message dans la messagerie.</p>
+                <form method="POST"
+                      action="http://localhost:8000/proxy?path=%2Fdemo1%2Fsend">
+                    <label>Message</label>
+                    <input name="message" placeholder="Votre message" required>
+
+                    <button type="submit">Envoyer le message</button>
+                </form>
+            </section>
+
+        </div>
+        """
+
+        self.send_html(page("Client POST du proxy", "#22d3ee", content))
 
     def do_POST(self):
         path = urlparse(self.path).path
